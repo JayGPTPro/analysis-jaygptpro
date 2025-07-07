@@ -146,6 +146,11 @@
             overflow: hidden;
         }
 
+        .ai-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .ai-button::before {
             content: '';
             position: absolute;
@@ -161,7 +166,7 @@
             left: 100%;
         }
 
-        .ai-button:hover {
+        .ai-button:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
         }
@@ -241,6 +246,43 @@
             margin-top: 32px;
         }
 
+        /* הוספת סטיילים להודעות הצלחה ושגיאה */
+        .success-message {
+            background: linear-gradient(135deg, var(--success-green) 0%, #059669 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 2rem;
@@ -283,6 +325,20 @@
                             Get instant access to 2 powerful AI prompts that will revolutionize how you analyze products. 
                             These aren't just prompts - they're your secret weapon for deep market intelligence.
                         </p>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div id="successMessage" class="success-message">
+                        <i class="fas fa-check-circle text-2xl mb-2"></i>
+                        <h3 class="text-xl font-bold mb-2">Thank you!</h3>
+                        <p>You've been successfully subscribed! Your AI prompts are on their way to your email.</p>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="errorMessage" class="error-message">
+                        <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                        <h3 class="text-xl font-bold mb-2">Oops!</h3>
+                        <p id="errorText">Something went wrong. Please try again.</p>
                     </div>
 
                     <!-- Form -->
@@ -343,9 +399,10 @@
                             </label>
                         </div>
 
-                        <button type="submit" class="ai-button w-full text-lg">
-                            <i class="fas fa-download mr-2"></i>
-                            Get My AI Prompts Now
+                        <button type="submit" id="submitButton" class="ai-button w-full text-lg">
+                            <div class="loading-spinner" id="loadingSpinner"></div>
+                            <i class="fas fa-download mr-2" id="downloadIcon"></i>
+                            <span id="buttonText">Get My AI Prompts Now</span>
                         </button>
                     </form>
 
@@ -394,29 +451,134 @@
         // Initialize particles
         createParticles();
 
+        // beehiiv API configuration
+        const BEEHIIV_API_KEY = 'NNbHUNVZqkne4j7dOMZfgoHzXuovyTsbYHbEvMH1NuqMjV65G3bGwEDtwvucFqVO';
+        const BEEHIIV_PUB_ID = 'pub_62f4e256-8154-4655-a085-48518f61cc12';
+        const BEEHIIV_API_URL = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUB_ID}/subscriptions`;
+
         // Form submission
-        document.getElementById('emailForm').addEventListener('submit', function(e) {
+        document.getElementById('emailForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
+            const submitButton = document.getElementById('submitButton');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const downloadIcon = document.getElementById('downloadIcon');
+            const buttonText = document.getElementById('buttonText');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
             const consent = document.getElementById('consent').checked;
             
+            // Validate form
             if (!firstName || !email || !consent) {
-                alert('Please fill in all required fields and agree to receive promotional emails.');
+                showError('Please fill in all required fields and agree to receive promotional emails.');
                 return;
             }
+
+            // Show loading state
+            submitButton.disabled = true;
+            loadingSpinner.style.display = 'inline-block';
+            downloadIcon.style.display = 'none';
+            buttonText.textContent = 'Sending...';
             
-            // Here you would typically send the data to your server
-            console.log('Form submitted:', { firstName, lastName, email, consent });
-            
-            // Simulate success
-            alert('Thank you! You will receive your AI prompts via email shortly.');
-            
-            // Redirect to the prompts page
-            window.open('https://jaygptpro.com/analysis-prompts.html', '_blank');
+            // Hide previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            try {
+                // Prepare data for beehiiv
+                const subscriberData = {
+                    email: email,
+                    reactivate_existing: true,
+                    send_welcome_email: true,
+                    utm_source: 'jaygptpro',
+                    utm_medium: 'landing_page',
+                    utm_campaign: 'analysis-prompt',
+                    referring_site: 'https://jaygptpro.com',
+                    custom_fields: []
+                };
+
+                // Add first name as custom field
+                if (firstName) {
+                    subscriberData.custom_fields.push({
+                        name: 'first_name',
+                        value: firstName
+                    });
+                }
+
+                // Add last name as custom field if provided
+                if (lastName) {
+                    subscriberData.custom_fields.push({
+                        name: 'last_name',
+                        value: lastName
+                    });
+                }
+
+                // Add tag to identify source
+                subscriberData.custom_fields.push({
+                    name: 'source',
+                    value: 'analysis-prompt'
+                });
+
+                // Send to beehiiv API
+                const response = await fetch(BEEHIIV_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${BEEHIIV_API_KEY}`
+                    },
+                    body: JSON.stringify(subscriberData)
+                });
+
+                if (response.ok) {
+                    // Success
+                    showSuccess();
+                    
+                    // Reset form
+                    document.getElementById('emailForm').reset();
+                    document.getElementById('consent').checked = true;
+                    
+                } else {
+                    const errorData = await response.json();
+                    console.error('beehiiv API error:', errorData);
+                    
+                    if (response.status === 409) {
+                        // User already exists
+                        showError('This email is already subscribed to our newsletter. Check your inbox!');
+                    } else {
+                        showError('Registration failed. Please try again or contact us.');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Network error:', error);
+                showError('Connection error. Please check your internet connection and try again.');
+            } finally {
+                // Reset button state
+                submitButton.disabled = false;
+                loadingSpinner.style.display = 'none';
+                downloadIcon.style.display = 'inline';
+                buttonText.textContent = 'Get My AI Prompts Now';
+            }
         });
+
+        function showSuccess() {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            successMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.scrollIntoView({ behavior: 'smooth' });
+        }
 
         // Prevent unchecking the consent checkbox
         document.getElementById('consent').addEventListener('click', function(e) {
@@ -426,15 +588,5 @@
             }
         });
     </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"95b813194fb61e45","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.6.2","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
 </body>
 </html>
-    <script id="html_badge_script1">
-        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
-            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDrXmA9FwAeDmNU06gnczkwr6brLbHKZLDuR8Ii6n3IEqLzb%2Fz6xW2WMrqqBNM9ZgoM1l3bB5QAAu%2B76A%2BLrZGYV3LkgjLz384uX7YgFt%2FjgKErKaXQks6PyLhkIhLUB%2BVeiTJ3KfJ9of4%2FLjlKfQgTGXMbSV9E6u124DCqM8ojVN1uIVP7LaJP64KdCCEO77N8pxF2rpgijA6vjXoQ2%2BBFA3cmU98lbExyqSHUHMOEEgwW9nlzupKzF2OSuQvwp4QWIZhu8Q8CQkjjNlHWVO2l3A85W3vHGPRzCRol6gSUHjKL4kN3MKoSTo7%2FokgQ%2BaZcaJdTWYBtMmkrSoQVb%2B99wdQBoBtccBbzp3csWvgwrqsKAqnQ0rSSA5tP59VN8MWxMo2AiRZkTt%2BiO6q9kX5THGuPuiPJfI5p62nchOqFdUFbzJfZ3XXs0M3piQ3Oggm3%2FiEum6qN96JuaozrjBQIm2makyJO3zd6VRilAEl%2Bp0ZAYLACww7h4pod8JXvHbbxp%2BHq7oEOxAvRZaskE8ukk%3D";
-        window.__genspark_locale = "en-US";
-        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDrXmA9FwAeDmNU06gnczkwr6brLbHKZLDuR8Ii6n3IEqLzb/z6xW2WMrqqBNM9ZgoM1l3bB5QAAu+76A+LrZGYV3LkgjLz384uX7YgFt/jgKErKaXQks6PyLhkIhLUB+VeiTJ3KfJ9of4/LjlKfQgTGXMbSV9E6u124DCqM8ojVN1uIVP7LaJP64KdCCEO77N8pxF2rpgijA6vjXoQ2+BFA3cmU98lbExyqSHUHMOEEgwW9nlzupKzF2OSuQvwp4QWIZhu8Q8CQkjjNlHWVO2l3A85W3vHGPRzCRol6gSUHjKL4kN3MKoSTo7/okgQ+aZcaJdTWYBtMmkrSoQVb+99wdQBoBtccBbzp3csWvgwrqsKAqnQ0rSSA5tP59VN8MWxMo2AiRZkTt+iO6q9kX5THGuPuiPJfI5p62nchOqFdUFbzJfZ3XXs0M3piQ3Oggm3/iEum6qN96JuaozrjBQIm2makyJO3zd6VRilAEl+p0ZAYLACww7h4pod8JXvHbbxp+Hq7oEOxAvRZaskE8ukk=";
-    </script>
-    
-    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
-    
