@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get 2 Copy-Paste AI Prompts for Deep Product Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Unbounded:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #6366f1;
+            --secondary-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --dark-bg: #0f0f23;
+            --card-bg: #1a1a2e;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --success-green: #10b981;
+        }
+
+        body {
+            font-family: 'Cabin', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f172a 75%, #0f0f23 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 60%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(99, 102, 241, 0.6);
+            border-radius: 50%;
+            animation: float 6s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .hero-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-family: 'Cabin', sans-serif;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .glass-card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+        }
+
+        .form-input {
+            background: rgba(15, 15, 35, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: var(--text-light);
+            font-family: 'Cabin', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .ai-button {
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            color: white;
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .ai-button:hover::before {
+            left: 100%;
+        }
+
+        .ai-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .whatsapp-button {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            color: white;
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .whatsapp-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-purple);
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox:checked {
+            background: var(--primary-purple);
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .ai-icon {
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .whatsapp-section {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .glass-card {
+                margin: 16px;
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg">
+        <div class="floating-particles" id="particles"></div>
+        
+        <div class="container mx-auto px-4 py-16 relative z-10">
+            <!-- Hero Section -->
+            <div class="text-center mb-16">
+                <h1 class="hero-title text-5xl md:text-6xl lg:text-7xl mb-6">
+                    Get 2 Copy-Paste AI Prompts
+                </h1>
+                <p class="hero-subtitle text-xl md:text-2xl mb-8">
+                    For Deep Product Analysis That Actually Works
+                </p>
+                <div class="flex justify-center mb-8">
+                    <i class="fas fa-robot text-6xl ai-icon"></i>
+                </div>
+            </div>
+
+            <!-- Main Card -->
+            <div class="max-w-2xl mx-auto">
+                <div class="glass-card p-8 md:p-12">
+                    <div class="text-center mb-8">
+                        <h2 class="section-title text-2xl md:text-3xl mb-4">
+                            <i class="fas fa-magic mr-3 ai-icon"></i>
+                            Transform Your Product Research
+                        </h2>
+                        <p class="text-lg text-gray-300 leading-relaxed">
+                            Get instant access to 2 powerful AI prompts that will revolutionize how you analyze products. 
+                            These aren't just prompts - they're your secret weapon for deep market intelligence.
+                        </p>
+                    </div>
+
+                    <!-- Form -->
+                    <form id="emailForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    First Name *
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="firstName" 
+                                    name="firstName" 
+                                    required 
+                                    class="form-input w-full"
+                                    placeholder="Enter your first name"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Last Name (Optional)
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="lastName" 
+                                    name="lastName" 
+                                    class="form-input w-full"
+                                    placeholder="Enter your last name"
+                                >
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Email Address *
+                            </label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                required 
+                                class="form-input w-full"
+                                placeholder="Enter your email address"
+                            >
+                        </div>
+
+                        <div class="checkbox-container">
+                            <input 
+                                type="checkbox" 
+                                id="consent" 
+                                name="consent" 
+                                required 
+                                checked 
+                                class="custom-checkbox"
+                            >
+                            <label for="consent" class="text-sm text-gray-300 cursor-pointer">
+                                I agree to receive promotional emails and marketing communications from Jay GPT Pro
+                            </label>
+                        </div>
+
+                        <button type="submit" class="ai-button w-full text-lg">
+                            <i class="fas fa-download mr-2"></i>
+                            Get My AI Prompts Now
+                        </button>
+                    </form>
+
+                    <!-- WhatsApp Section -->
+                    <div class="whatsapp-section text-center">
+                        <h3 class="section-title text-xl mb-4">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Join Our WhatsApp Group
+                        </h3>
+                        <p class="text-gray-300 mb-6">
+                            Get ongoing AI updates, tips & tricks for E-commerce sellers.
+                        </p>
+                        <button class="whatsapp-button" onclick="window.open('https://chat.whatsapp.com/FWEhjKesDrvAP8wugfVbIs', '_blank')">
+                            <i class="fab fa-whatsapp"></i>
+                            Join the WhatsApp group
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-16 text-gray-400">
+                <p class="text-sm">
+                    © 2025 Jay GPT Pro. Created by Jay Margaliot
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize particles
+        createParticles();
+
+        // Form submission
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const consent = document.getElementById('consent').checked;
+            
+            if (!firstName || !email || !consent) {
+                alert('Please fill in all required fields and agree to receive promotional emails.');
+                return;
+            }
+            
+            // Here you would typically send the data to your server
+            console.log('Form submitted:', { firstName, lastName, email, consent });
+            
+            // Simulate success
+            alert('Thank you! You will receive your AI prompts via email shortly.');
+            
+            // Redirect to the prompts page
+            window.open('https://jaygptpro.com/analysis-prompts.html', '_blank');
+        });
+
+        // Prevent unchecking the consent checkbox
+        document.getElementById('consent').addEventListener('click', function(e) {
+            if (!this.checked) {
+                e.preventDefault();
+                this.checked = true;
+            }
+        });
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"95b813194fb61e45","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.6.2","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDrXmA9FwAeDmNU06gnczkwr6brLbHKZLDuR8Ii6n3IEqLzb%2Fz6xW2WMrqqBNM9ZgoM1l3bB5QAAu%2B76A%2BLrZGYV3LkgjLz384uX7YgFt%2FjgKErKaXQks6PyLhkIhLUB%2BVeiTJ3KfJ9of4%2FLjlKfQgTGXMbSV9E6u124DCqM8ojVN1uIVP7LaJP64KdCCEO77N8pxF2rpgijA6vjXoQ2%2BBFA3cmU98lbExyqSHUHMOEEgwW9nlzupKzF2OSuQvwp4QWIZhu8Q8CQkjjNlHWVO2l3A85W3vHGPRzCRol6gSUHjKL4kN3MKoSTo7%2FokgQ%2BaZcaJdTWYBtMmkrSoQVb%2B99wdQBoBtccBbzp3csWvgwrqsKAqnQ0rSSA5tP59VN8MWxMo2AiRZkTt%2BiO6q9kX5THGuPuiPJfI5p62nchOqFdUFbzJfZ3XXs0M3piQ3Oggm3%2FiEum6qN96JuaozrjBQIm2makyJO3zd6VRilAEl%2Bp0ZAYLACww7h4pod8JXvHbbxp%2BHq7oEOxAvRZaskE8ukk%3D";
+        window.__genspark_locale = "en-US";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDrXmA9FwAeDmNU06gnczkwr6brLbHKZLDuR8Ii6n3IEqLzb/z6xW2WMrqqBNM9ZgoM1l3bB5QAAu+76A+LrZGYV3LkgjLz384uX7YgFt/jgKErKaXQks6PyLhkIhLUB+VeiTJ3KfJ9of4/LjlKfQgTGXMbSV9E6u124DCqM8ojVN1uIVP7LaJP64KdCCEO77N8pxF2rpgijA6vjXoQ2+BFA3cmU98lbExyqSHUHMOEEgwW9nlzupKzF2OSuQvwp4QWIZhu8Q8CQkjjNlHWVO2l3A85W3vHGPRzCRol6gSUHjKL4kN3MKoSTo7/okgQ+aZcaJdTWYBtMmkrSoQVb+99wdQBoBtccBbzp3csWvgwrqsKAqnQ0rSSA5tP59VN8MWxMo2AiRZkTt+iO6q9kX5THGuPuiPJfI5p62nchOqFdUFbzJfZ3XXs0M3piQ3Oggm3/iEum6qN96JuaozrjBQIm2makyJO3zd6VRilAEl+p0ZAYLACww7h4pod8JXvHbbxp+Hq7oEOxAvRZaskE8ukk=";
+    </script>
+    
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    
