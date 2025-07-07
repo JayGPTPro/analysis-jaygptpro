@@ -451,9 +451,9 @@
         createParticles();
 
         // Smoove API configuration
-        const SMOOVE_API_KEY = '45fa58da-0ed2-403d-86ae-144131fc35f4';
-        const SMOOVE_LIST_ID = '1053857';
-        const SMOOVE_API_URL = 'https://rest.smoove.io/v1/Contacts';
+const SMOOVE_API_KEY = '45fa58da-0ed2-403d-86ae-144131fc35f4';
+const SMOOVE_LIST_ID = '1053857';
+const SMOOVE_API_URL = 'https://rest.smoove.io/v1/AsyncContacts';
 
         // Form submission
         document.getElementById('emailForm').addEventListener('submit', async function(e) {
@@ -491,21 +491,16 @@
             try {
                 // Prepare data for Smoove
                 const contactData = {
-                    Email: email,
-                    FirstName: firstName,
-                    LastName: lastName || '',
-                    Lists: [parseInt(SMOOVE_LIST_ID)],
-                    Properties: [
-                        {
-                            Name: 'Source',
-                            Value: 'Analysis Prompt Landing Page'
-                        },
-                        {
-                            Name: 'Campaign',
-                            Value: 'AI Analysis Prompts'
-                        }
-                    ]
-                };
+    contact: {
+        email: email,
+        firstName: firstName,
+        lastName: lastName || '',
+        lists: [parseInt(SMOOVE_LIST_ID)]
+    },
+    updateFields: false,
+    restoreDeleted: false,
+    overrideUnsubscribed: false
+};
 
                 // Send to Smoove API
                 const response = await fetch(SMOOVE_API_URL, {
