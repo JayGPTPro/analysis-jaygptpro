@@ -246,7 +246,6 @@
             margin-top: 32px;
         }
 
-        /* הוספת סטיילים להודעות הצלחה ושגיאה */
         .success-message {
             background: linear-gradient(135deg, var(--success-green) 0%, #059669 100%);
             color: white;
@@ -451,10 +450,10 @@
         // Initialize particles
         createParticles();
 
-        // beehiiv API configuration
-        const BEEHIIV_API_KEY = 'NNbHUNVZqkne4j7dOMZfgoHzXuovyTsbYHbEvMH1NuqMjV65G3bGwEDtwvucFqVO';
-        const BEEHIIV_PUB_ID = 'pub_62f4e256-8154-4655-a085-48518f61cc12';
-        const BEEHIIV_API_URL = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUB_ID}/subscriptions`;
+        // Smoove API configuration
+        const SMOOVE_API_KEY = '45fa58da-0ed2-403d-86ae-144131fc35f4';
+        const SMOOVE_LIST_ID = '1053857';
+        const SMOOVE_API_URL = 'https://rest.smoove.io/v1/Contacts';
 
         // Form submission
         document.getElementById('emailForm').addEventListener('submit', async function(e) {
@@ -490,48 +489,32 @@
             errorMessage.style.display = 'none';
 
             try {
-                // Prepare data for beehiiv
-                const subscriberData = {
-                    email: email,
-                    reactivate_existing: true,
-                    send_welcome_email: true,
-                    utm_source: 'jaygptpro',
-                    utm_medium: 'landing_page',
-                    utm_campaign: 'analysis-prompt',
-                    referring_site: 'https://jaygptpro.com',
-                    custom_fields: []
+                // Prepare data for Smoove
+                const contactData = {
+                    Email: email,
+                    FirstName: firstName,
+                    LastName: lastName || '',
+                    Lists: [parseInt(SMOOVE_LIST_ID)],
+                    Properties: [
+                        {
+                            Name: 'Source',
+                            Value: 'Analysis Prompt Landing Page'
+                        },
+                        {
+                            Name: 'Campaign',
+                            Value: 'AI Analysis Prompts'
+                        }
+                    ]
                 };
 
-                // Add first name as custom field
-                if (firstName) {
-                    subscriberData.custom_fields.push({
-                        name: 'first_name',
-                        value: firstName
-                    });
-                }
-
-                // Add last name as custom field if provided
-                if (lastName) {
-                    subscriberData.custom_fields.push({
-                        name: 'last_name',
-                        value: lastName
-                    });
-                }
-
-                // Add tag to identify source
-                subscriberData.custom_fields.push({
-                    name: 'source',
-                    value: 'analysis-prompt'
-                });
-
-                // Send to beehiiv API
-                const response = await fetch(BEEHIIV_API_URL, {
+                // Send to Smoove API
+                const response = await fetch(SMOOVE_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${BEEHIIV_API_KEY}`
+                        'Authorization': `Bearer ${SMOOVE_API_KEY}`
                     },
-                    body: JSON.stringify(subscriberData)
+                    body: JSON.stringify(contactData)
                 });
 
                 if (response.ok) {
@@ -542,11 +525,14 @@
                     document.getElementById('emailForm').reset();
                     document.getElementById('consent').checked = true;
                     
+                    // Optional: redirect or trigger email automation
+                    // You can set up an automation in Smoove to send the prompts
+                    
                 } else {
                     const errorData = await response.json();
-                    console.error('beehiiv API error:', errorData);
+                    console.error('Smoove API error:', errorData);
                     
-                    if (response.status === 409) {
+                    if (response.status === 409 || (errorData && errorData.message && errorData.message.includes('already exists'))) {
                         // User already exists
                         showError('This email is already subscribed to our newsletter. Check your inbox!');
                     } else {
